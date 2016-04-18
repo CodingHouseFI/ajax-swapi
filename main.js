@@ -1,35 +1,22 @@
 'use strict';
 
 $(function() {
-  $('button.getStuff').click(getStuff);
+  $('.personForm').submit(getPerson);
+  renderPeople();
 });
 
-function getStuff() {
-
-  // make HTTP request
-  // http://swapi.co/api/people/1/
-  $.ajax({
-    url: 'http://swapi.co/api/people/1/',
-    success: function(personData) {
-      // successful response (status code)
-      console.log('personData:', personData);
-
-      var $person = makePersonCard(personData);
-      // $person === jQuery object ready to append
-
-      $('.people').append($person);
-      // $person.appendTo($('.people'))
-
-    },
-    error: function(err) {
+function renderPeople(page) {
+  $.ajax(`http://swapi.co/api/people/?page=${page}`)
+    .done(function(data) {
+      var personObjs = data.results;
+      var $personCards = personObjs.map(makePersonCard);
+      $('.people').append($personCards);
+    })
+    .fail(function(err) {
       console.error(err);
-    }
-  });
-}
+    });
 
-// function name is makePersonCard
-// first argument is object with person info
-// return value is jQuery object
+}
 
 function makePersonCard(personObj) {
   var $card = $('<div>').addClass('card');
@@ -41,4 +28,18 @@ function makePersonCard(personObj) {
   return $card;
 }
 
+function getPerson(event) {
+  event.preventDefault();
+  var personNum = $('.personNumber').val();
 
+  $.ajax({
+    url: `http://swapi.co/api/people/${personNum}/`,
+    success: function(personData) {
+      var $person = makePersonCard(personData);
+      $('.people').append($person);
+    },
+    error: function(err) {
+      console.error(err);
+    }
+  });
+}
